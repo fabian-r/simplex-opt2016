@@ -94,3 +94,36 @@ double Phase2(Matrix& t)
     return - t.get(0, 0);
 }
 
+bool Phase1(Matrix& t)
+{
+    Matrix a(t.M, t.N + t.M-1);
+    t.set(0, 0, 0.0);
+
+    double sum = 0.0;
+
+    for (unsigned x = 0; x < t.M; ++x) {
+        double sign_factor = (LESS(t.get(x, 0), 0.0)) ? -1.0 : 1.0;
+
+        sum -= t.get(x,0);
+
+        for (unsigned y = 0; y < t.N; ++y) {
+            a.set(x, y, sign_factor * t.get(x, y));
+        }
+
+        if (x > 0) {
+            for (unsigned y = t.N; y < a.N; ++y) {
+                if (y - t.N == x - 1) {
+                    a.set(x, y, 1.0);
+                    a.setMapping(x, y);
+                    break;
+                }
+            }
+        }
+    }
+    a.set(0, 0, sum);
+
+    std::cerr << a;
+
+    return false;
+}
+

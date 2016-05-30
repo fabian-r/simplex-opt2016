@@ -40,15 +40,17 @@ int main(int argc, char *argv[])
     m.set(3, 5, 0);
     m.set(3, 6, 1);
 
-    std::cout << "Initial: {{{" << std::endl;
-    std::cout << m << std::endl;;
-    std::cout << "}}}" << std::endl;
-
-    auto res = Phase2(m);
-
-    std::cout << "Final: {{{" << std::endl;
-    std::cout << m;
-    std::cout << "}}}" << std::endl;
-    std::cout << "Result: " << std::endl << res << std::endl;
+    // std::cout << "Initial: {{{" << std::endl;
+    // std::cout << m << std::endl;;
+    // std::cout << "}}}" << std::endl;
+    //
+    // auto res = Phase2(m);
+    //
+    // std::cout << "Final: {{{" << std::endl;
+    // std::cout << m;
+    // std::cout << "}}}" << std::endl;
+    // std::cout << "Result: " << std::endl << res << std::endl;
+    //
+    Phase1(m);
     return 0;
 }

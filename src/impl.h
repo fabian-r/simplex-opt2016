@@ -16,6 +16,7 @@ struct Matrix
 {
 private:
     std::vector<double> Contents_;
+    std::vector<unsigned> Mapping_;
 
 public:
     const double M; // number of rows
@@ -23,7 +24,8 @@ public:
 
 public:
 
-    Matrix(unsigned m, unsigned n) : Contents_(m*n, 0.0), M(m), N(n)
+    Matrix(unsigned m, unsigned n) :
+        Contents_(m*n, 0.0), Mapping_(m, 0), M(m), N(n)
     {
     }
 
@@ -51,6 +53,16 @@ public:
         }
     }
 
+    void setMapping(unsigned row, unsigned var)
+    {
+        Mapping_.at(row) = var;
+    }
+
+    unsigned getMapping(unsigned row) const
+    {
+        return Mapping_.at(row);
+    }
+
     friend std::ostream& operator<< (std::ostream& stream, const Matrix& m)
     {
         stream << m.M << " " << m.N << std::endl;
@@ -71,4 +83,5 @@ public:
 
 Result PerformPivot(Matrix& t);
 
+bool Phase1(Matrix& t);
 double Phase2(Matrix& t);
