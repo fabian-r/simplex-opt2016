@@ -12,6 +12,8 @@ bool verbose = false;
 Result PerformPivot(Matrix& t)
 {
     // TODO check soundness?
+
+    // choose first j with reduced cost < 0
     unsigned j = 0;
     for (unsigned y = 1; y < t.N; ++y) {
         if (LESS(t.get(0, y), 0)) {
@@ -21,6 +23,7 @@ Result PerformPivot(Matrix& t)
     }
 
     if (j == 0) {
+        // no such j exists => optimal solution found
         if (verbose)
             std::cerr << " > optimal" << std::endl;
         return OPTIMAL;
@@ -30,6 +33,7 @@ Result PerformPivot(Matrix& t)
         std::cerr << " > Choose j = " << j << std::endl;
     }
 
+    // choose l that minimizes x_B(l) < / u_l with u_l > 0
     unsigned l = 0;
     double min = std::numeric_limits<double>::infinity();
 
@@ -45,6 +49,7 @@ Result PerformPivot(Matrix& t)
     }
 
     if (l == 0) {
+        // if no such l exists => problem is unbounded
         if (verbose)
             std::cerr << " > unbounded" << std::endl;
         return UNBOUNDED;
@@ -55,15 +60,19 @@ Result PerformPivot(Matrix& t)
         std::cerr << " ~~> (" << l << ") = (" << l << ") * " << 1/t.get(l, j) << std::endl;
     }
 
+    // update the mapping from columns to variables
+    t.setMapping(l, j);
+
+    // perform elementary row operations
     t.multiplyRowBy(l, 1/t.get(l, j));
 
     for (unsigned x = 0; x < t.M; ++x) {
         if (x == l)
             continue;
-    if (verbose) {
-        std::cerr << " ~~> (" << x << ") = (" << x << ") + (" << l << ") * "
-                  << -t.get(x, j) << std::endl;
-    }
+        if (verbose) {
+            std::cerr << " ~~> (" << x << ") = (" << x << ") + (" << l << ") * "
+                      << -t.get(x, j) << std::endl;
+        }
         t.addDTimesRowBToRowA(x, l, -t.get(x, j));
     }
 
@@ -96,31 +105,44 @@ double Phase2(Matrix& t)
 
 bool Phase1(Matrix& t)
 {
+    // read cost vector
+    std::vector<double> c(t.M-1);
+    for (unsigned y = 1; y < t.M; ++y) {
+        c.at(y) = t.get(0, y);
+    }
+
+    // create tableau for artificial problem
     Matrix a(t.M, t.N + t.M-1);
     t.set(0, 0, 0.0);
 
     double sum = 0.0;
 
-    for (unsigned x = 0; x < t.M; ++x) {
+    for (unsigned x = 1; x < t.M; ++x) {
+        // factor for making every entry of b >= 0
         double sign_factor = (LESS(t.get(x, 0), 0.0)) ? -1.0 : 1.0;
 
         sum -= t.get(x,0);
 
+        // set first N entrys of the artificial tableau
         for (unsigned y = 0; y < t.N; ++y) {
             a.set(x, y, sign_factor * t.get(x, y));
         }
 
-        if (x > 0) {
-            for (unsigned y = t.N; y < a.N; ++y) {
-                if (y - t.N == x - 1) {
-                    a.set(x, y, 1.0);
-                    a.setMapping(x, y);
-                    break;
-                }
+        // set entries corresponding to the artificial variables
+        for (unsigned y = t.N; y < a.N; ++y) {
+            if (y - t.N == x - 1) {
+                a.set(x, y, 1.0);
+                a.setMapping(x, y);
+                break;
             }
         }
     }
+
+    // set non-zero entries of the zeroth row
     a.set(0, 0, sum);
+    for (unsigned y = t.N; y < a.N; ++y) {
+        a.set(0, y, 1);
+    }
 
     std::cerr << a;
 

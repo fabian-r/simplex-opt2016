@@ -78,10 +78,48 @@ public:
         stream << std::endl;
         return stream;
     }
+
+    static Matrix fromInput(std::istream& stream)
+    {
+        unsigned m, n;
+        stream >> m;
+        stream >> n;
+        Matrix res(m, n);
+        for (unsigned x = 0; x < res.M; ++x) {
+            for (unsigned y = 0; y < res.N; ++y) {
+                double val;
+                stream >> val;
+                res.set(x, y, val);
+            }
+        }
+        return res;
+    }
+
+    void printMapping(std::ostream& stream) const
+    {
+        stream << "objective value: " << -this->get(0, 0) << std::endl;
+        for (unsigned x = 0; x < this->M; ++x) {
+            stream << "x" << this->getMapping(x) << " = " << this->get(x, 0)
+                   << std::endl;
+        }
+    }
 };
 
 
+/**
+ * Perform one iteration of the simplex method.
+ *
+ * Returns the termination state of the simplex method.
+ */
 Result PerformPivot(Matrix& t);
 
+/**
+ * Perform phase 1 of the full tableau simplex method.
+ * The input matrix is expected to contain the cost in the zeroth row, starting
+ * from the first entry.
+ *
+ * Returns true if the problem is feasible and false otherwise.
+ */
 bool Phase1(Matrix& t);
+
 double Phase2(Matrix& t);

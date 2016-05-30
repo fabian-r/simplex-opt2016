@@ -1,44 +1,35 @@
+#include <cstring>
 #include "impl.h"
 
 int main(int argc, char *argv[])
 {
-    (void*)argv;
-    if (argc > 1) {
-        verbose = true;
+
+    bool from_stdin = false;
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0) {
+            verbose = true;
+        } else if (strcmp(argv[i], "--stdin") == 0) {
+            from_stdin = true;
+        } else {
+            std::cout << "Simplex tool - Usage:" << std::endl;
+            std::cout << "  simplex [flags]" << std::endl;
+            std::cout << "The following flags are supported:" << std::endl;
+            std::cout << " -h, --help      show this help" << std::endl;
+            std::cout << " -v, --verbose   show detailed steps" << std::endl;
+            std::cout << " --stdin         expect input full tableau from stdin"
+                << std::endl;
+        }
     }
 
-    Matrix m(4, 7);
-    m.set(0, 0, 0);
-    m.set(0, 1, -10);
-    m.set(0, 2, -12);
-    m.set(0, 3, -12);
-    m.set(0, 4, 0);
-    m.set(0, 5, 0);
-    m.set(0, 6, 0);
-
-    m.set(1, 0, 20);
-    m.set(1, 1, 1);
-    m.set(1, 2, 2);
-    m.set(1, 3, 2);
-    m.set(1, 4, 1);
-    m.set(1, 5, 0);
-    m.set(1, 6, 0);
-
-    m.set(2, 0, 20);
-    m.set(2, 1, 2);
-    m.set(2, 2, 1);
-    m.set(2, 3, 2);
-    m.set(2, 4, 0);
-    m.set(2, 5, 1);
-    m.set(2, 6, 0);
-
-    m.set(3, 0, 20);
-    m.set(3, 1, 2);
-    m.set(3, 2, 2);
-    m.set(3, 3, 1);
-    m.set(3, 4, 0);
-    m.set(3, 5, 0);
-    m.set(3, 6, 1);
+    if (from_stdin) {
+        Matrix m = Matrix::fromInput(std::cin);
+        std::cout << m;
+        Phase2(m);
+        std::cout << m;
+        std::cout << std::endl;
+        m.printMapping(std::cout);
+        std::cout << std::endl;
+    }
 
     // std::cout << "Initial: {{{" << std::endl;
     // std::cout << m << std::endl;;
@@ -51,6 +42,6 @@ int main(int argc, char *argv[])
     // std::cout << "}}}" << std::endl;
     // std::cout << "Result: " << std::endl << res << std::endl;
     //
-    Phase1(m);
+    // Phase1(m);
     return 0;
 }
