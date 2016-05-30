@@ -6,6 +6,8 @@
 #define EPSILON 0.000000001
 #define LESS(a,b) ((a)-(b) < -EPSILON)
 
+bool verbose = false;
+
 
 Result PerformPivot(Matrix& t)
 {
@@ -18,12 +20,15 @@ Result PerformPivot(Matrix& t)
         }
     }
 
-    if (j == 0)
+    if (j == 0) {
+        if (verbose)
+            std::cerr << " > optimal" << std::endl;
         return OPTIMAL;
+    }
 
-#ifdef DBG
-    std::cerr << "Choose j = " << j << std::endl;
-#endif
+    if (verbose) {
+        std::cerr << " > Choose j = " << j << std::endl;
+    }
 
     unsigned l = 0;
     double min = std::numeric_limits<double>::infinity();
@@ -39,33 +44,53 @@ Result PerformPivot(Matrix& t)
         }
     }
 
-    if (l == 0)
+    if (l == 0) {
+        if (verbose)
+            std::cerr << " > unbounded" << std::endl;
         return UNBOUNDED;
-#ifdef DBG
-    std::cerr << "Choose l = " << l << std::endl;
+    }
 
-    std::cerr << "=====" << std::endl;
-    std::cerr << "-> (" << l << ") = (" << l << ") * " << 1/t.get(l, j) << std::endl;
-#endif
+    if (verbose) {
+        std::cerr << " > Choose l = " << l << std::endl;
+        std::cerr << " ~~> (" << l << ") = (" << l << ") * " << 1/t.get(l, j) << std::endl;
+    }
+
     t.multiplyRowBy(l, 1/t.get(l, j));
-#ifdef DBG
-    std::cerr << t;
-#endif
 
     for (unsigned x = 0; x < t.M; ++x) {
         if (x == l)
             continue;
-#ifdef DBG
-        std::cerr << "=====" << std::endl;
-        std::cerr << "-> (" << x << ") = (" << x << ") + (" << l << ") * " << -t.get(x, j) << std::endl;
-#endif
+    if (verbose) {
+        std::cerr << " ~~> (" << x << ") = (" << x << ") + (" << l << ") * "
+                  << -t.get(x, j) << std::endl;
+    }
         t.addDTimesRowBToRowA(x, l, -t.get(x, j));
-#ifdef DBG
-        std::cerr << t;
-#endif
     }
 
+    if (verbose)
+        std::cerr << " > non-optimal" << std::endl;
     return NONOPTIMAL;
 }
 
+double Phase2(Matrix& t)
+{
+    Result res;
+    unsigned num = 0;
+    do {
+        if (verbose) {
+            std::cerr << "Iteration " << ++num << ": {{{" << std::endl;
+        }
+        res = PerformPivot(t);
+        if (verbose) {
+            std::cerr << t;
+            std::cerr << "}}}" << std::endl;
+            std::cerr << std::endl;
+        }
+    } while (res == NONOPTIMAL);
+
+    if (res == UNBOUNDED) {
+        return - std::numeric_limits<double>::infinity();
+    }
+    return - t.get(0, 0);
+}
 

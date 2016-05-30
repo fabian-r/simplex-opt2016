@@ -17,7 +17,7 @@ OBJ    := $(SRC:$(SRCDIR)/%.cpp=$(BINDIR)/%.o)
 DEP    := $(OBJ:%.o=%.d)
 
 # Show compiler warnings and treat them seriously!
-CXXFLAGS += -Wall -W -Werror
+CXXFLAGS += -Wall -W
 
 # Standard compile time flags for C++/CXX projects.
 CXXFLAGS += -std=c++11

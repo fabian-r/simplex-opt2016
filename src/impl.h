@@ -3,6 +3,8 @@
 #include <vector>
 #include <iostream>
 
+extern bool verbose;
+
 enum Result
 {
     UNBOUNDED,
@@ -69,3 +71,4 @@ public:
 
 Result PerformPivot(Matrix& t);
 
+double Phase2(Matrix& t);
