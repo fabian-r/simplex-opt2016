@@ -3,6 +3,12 @@
 #include <vector>
 #include <iostream>
 
+// because floats suck...
+#define EPSILON 0.000000001
+#define LESS(a,b) ((a)-(b) < -EPSILON)
+#define EQ(a,b) (((a)-(b))*((a)-(b)) < EPSILON*EPSILON)
+
+
 extern bool verbose;
 
 enum Result
@@ -49,6 +55,15 @@ public:
     {
         for (unsigned y = 0; y < N; ++y) {
             this->set(a, y, this->get(a, y) + this->get(b, y) * d);
+        }
+    }
+
+    void Canonicalize(void)
+    {
+        for (unsigned i = 0; i < M*N; ++i) {
+            if (EQ(0, Contents_.at(i))) {
+                Contents_.at(i) = 0.0;
+            }
         }
     }
 

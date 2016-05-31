@@ -3,11 +3,6 @@
 #include <limits>
 #include <cassert>
 
-// because floats suck...
-#define EPSILON 0.000000001
-#define LESS(a,b) ((a)-(b) < -EPSILON)
-#define EQ(a,b) (((a)-(b))*((a)-(b)) < EPSILON*EPSILON)
-
 bool verbose = false;
 
 
@@ -130,8 +125,11 @@ double Phase2(Matrix& t)
     } while (res == NONOPTIMAL);
 
     if (res == UNBOUNDED) {
+        t.Canonicalize();
         return - std::numeric_limits<double>::infinity();
     }
+
+    t.Canonicalize();
     return - t.get(0, 0);
 }
 
@@ -241,8 +239,6 @@ bool Phase1(Matrix& t)
     Matrix t_old = t;
     t.set(0, 0, 0.0);
 
-    std::cerr << std::endl << t << std::endl;
-
     // calculate rows 1..M for phase 2
     for (unsigned x = 1; x < t.M; ++x) {
         for (unsigned y = 0; y < t.N; ++y) {
@@ -254,8 +250,10 @@ bool Phase1(Matrix& t)
         }
     }
 
-    std::cerr << std::endl << t << std::endl;
-
+    // set up correct mapping
+    for (unsigned x = 1; x < t.M; ++x) {
+        t.setMapping(x, a.getMapping(x));
+    }
 
     std::vector<double> cb(t.M-1, 0.0);
     for (unsigned x = 1; x < t.M; ++x) {
@@ -270,8 +268,14 @@ bool Phase1(Matrix& t)
         t.set(0, y, t.get(0, y) - val);
     }
 
-    std::cerr << std::endl << t << std::endl;
 
+    if (verbose) {
+        std::cerr << std::endl << "Tableau after phase 1: {{{" << std::endl;
+        std::cerr << t << std::endl;
+        std::cerr << "}}}" << std::endl;
+    }
+
+    t.Canonicalize();
     return true;
 }
 
