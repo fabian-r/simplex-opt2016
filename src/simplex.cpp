@@ -14,12 +14,15 @@ int main(int argc, char *argv[])
             std::cout << "Simplex tool - Usage:" << std::endl;
             std::cout << "  simplex [flags]" << std::endl;
             std::cout << "The following flags are supported:" << std::endl;
-            std::cout << " -h, --help         show this help" << std::endl;
-            std::cout << " -v, --verbose      show detailed steps" << std::endl;
-            std::cout << " -e --experiments   perform experiments" << std::endl;
+            std::cout << " -h, --help          show this help" << std::endl;
+            std::cout << " -v, --verbose       show detailed steps"
+                      << std::endl;
+            std::cout << " -e, --experiments   perform experiments"
+                      << std::endl;
+            std::cout << "If -e is not given, a tableau is expected from stdin." << std::endl;
+            exit(13);
         }
     }
-
 
     if (do_experiments) {
 

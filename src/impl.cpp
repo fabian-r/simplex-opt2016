@@ -110,6 +110,9 @@ Result PerformPivot(Matrix& t)
 
 double Phase2(Matrix& t)
 {
+    if (verbose) {
+        std::cerr << "Phase 2: {{{" << std::endl;
+    }
     Result res;
     unsigned num = 0;
     do {
@@ -130,6 +133,9 @@ double Phase2(Matrix& t)
     }
 
     t.Canonicalize();
+    if (verbose) {
+        std::cerr << "}}}" << std::endl;
+    }
     return - t.get(0, 0);
 }
 
@@ -162,7 +168,8 @@ bool Phase1(Matrix& t)
     }
 
     if (verbose) {
-        std::cerr << "Solve artificial LP: {{{" << std::endl;
+        std::cerr << "Phase 1: {{{" << std::endl;
+        std::cerr << " artificial LP :" << std::endl;
         std::cerr << a << std::endl;
     }
 
@@ -208,7 +215,6 @@ bool Phase1(Matrix& t)
         std::cerr << std::endl << "Solution of artificial LP:" << std::endl;
         std::cerr << a << std::endl;
         a.printMapping(std::cerr);
-        std::cerr << "}}}" << std::endl;
     }
 
     // calculate inverted basic matrix AB^-1
@@ -226,13 +232,11 @@ bool Phase1(Matrix& t)
     if (verbose) {
         std::cerr << std::endl << "Inversion matrix:" << std::endl;
         std::cerr << inv << std::endl;
-        std::cerr << "}}}" << std::endl;
     }
     ReducedRowEchelon(inv);
     if (verbose) {
         std::cerr << std::endl << "Inversion matrix in reduced row echelon form:" << std::endl;
         std::cerr << inv << std::endl;
-        std::cerr << "}}}" << std::endl;
     }
 
 
@@ -270,7 +274,7 @@ bool Phase1(Matrix& t)
 
 
     if (verbose) {
-        std::cerr << std::endl << "Tableau after phase 1: {{{" << std::endl;
+        std::cerr << std::endl << "Tableau after phase 1:" << std::endl;
         std::cerr << t << std::endl;
         std::cerr << "}}}" << std::endl;
     }
