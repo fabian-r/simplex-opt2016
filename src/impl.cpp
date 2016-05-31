@@ -1,11 +1,12 @@
 #include "impl.h"
 
 #include <limits>
+#include <cassert>
 
 // because floats suck...
 #define EPSILON 0.000000001
 #define LESS(a,b) ((a)-(b) < -EPSILON)
-#define EQ(a,b) (((a)-(b))*((a)-(b)) < EPSILON)
+#define EQ(a,b) (((a)-(b))*((a)-(b)) < EPSILON*EPSILON)
 
 bool verbose = false;
 
@@ -35,6 +36,24 @@ void Eliminate(Matrix& t, unsigned l, unsigned j)
         }
         t.addDTimesRowBToRowA(x, l, -t.get(x, j));
     }
+}
+
+void ReducedRowEchelon(Matrix& m)
+{
+    for (unsigned x = 0; x < m.M; ++x) {
+        if (EQ(m.get(x, x), 0)) {
+            bool success = false;
+            for (unsigned y = x; y < m.M; ++y) {
+                if (EQ(m.get(y, x), 0))
+                    continue;
+                m.addDTimesRowBToRowA(x, y, 1.0);
+                success = true;
+            }
+            assert(success && "invalid input for reduced row echelon algorithm!");
+        }
+        Eliminate(m, x, x);
+    }
+
 }
 
 Result PerformPivot(Matrix& t)
@@ -118,12 +137,6 @@ double Phase2(Matrix& t)
 
 bool Phase1(Matrix& t)
 {
-    // read cost vector
-    std::vector<double> c(t.M-1);
-    for (unsigned y = 1; y < t.M; ++y) {
-        c.at(y-1) = t.get(0, y);
-    }
-
     // create tableau for artificial problem
     Matrix a(t.M, t.N + t.M-1);
 
@@ -185,9 +198,11 @@ bool Phase1(Matrix& t)
         }
 
         if (! success) {
+            assert(false && "failed to eliminate!");
             // we cannot eliminate the variable from the basis
+            // => the constraint is redundant
             std::cerr << " failed to eliminate!" << std::endl;
-            a.setMapping(x, 0);
+            a.setMapping(x, 0); // TODO remove row
         }
     }
 
@@ -198,8 +213,64 @@ bool Phase1(Matrix& t)
         std::cerr << "}}}" << std::endl;
     }
 
-    // TODO set up t
-    // --> invert matrix
+    // calculate inverted basic matrix AB^-1
+    unsigned rows = a.M-1;
+    Matrix inv(rows, 2*rows);
+    for (unsigned x = 0; x < rows; ++x) {
+        unsigned var = a.getMapping(x+1);
+        for (unsigned y = 0; y < rows; ++y) {
+            inv.set(y, x, t.get(y+1, var));
+            if (y == x)
+                inv.set(y, x+rows, 1.0);
+        }
+
+    }
+    if (verbose) {
+        std::cerr << std::endl << "Inversion matrix:" << std::endl;
+        std::cerr << inv << std::endl;
+        std::cerr << "}}}" << std::endl;
+    }
+    ReducedRowEchelon(inv);
+    if (verbose) {
+        std::cerr << std::endl << "Inversion matrix in reduced row echelon form:" << std::endl;
+        std::cerr << inv << std::endl;
+        std::cerr << "}}}" << std::endl;
+    }
+
+
+    Matrix t_old = t;
+    t.set(0, 0, 0.0);
+
+    std::cerr << std::endl << t << std::endl;
+
+    // calculate rows 1..M for phase 2
+    for (unsigned x = 1; x < t.M; ++x) {
+        for (unsigned y = 0; y < t.N; ++y) {
+            double val = 0.0;
+            for (unsigned z = 1; z < t.M; ++z) {
+                val += inv.get(x-1, t.M-1+z-1) * t_old.get(z, y);
+            }
+            t.set(x, y, val);
+        }
+    }
+
+    std::cerr << std::endl << t << std::endl;
+
+
+    std::vector<double> cb(t.M-1, 0.0);
+    for (unsigned x = 1; x < t.M; ++x) {
+        cb.at(x-1) = t_old.get(0, a.getMapping(x));
+    }
+
+    for (unsigned y = 0; y < t.N; ++y) {
+        double val = 0.0;
+        for (unsigned x = 1; x < t.M; ++x) {
+            val += cb.at(x-1) * t.get(x, y);
+        }
+        t.set(0, y, t.get(0, y) - val);
+    }
+
+    std::cerr << std::endl << t << std::endl;
 
     return true;
 }
