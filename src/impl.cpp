@@ -10,6 +10,33 @@
 bool verbose = false;
 
 
+/**
+ * Perform the necessary operations such that B(l) leaves the basis and j enters
+ * it.
+ */
+void Eliminate(Matrix& t, unsigned l, unsigned j)
+{
+    // update the mapping from columns to variables
+    t.setMapping(l, j);
+
+    if (verbose) {
+        std::cerr << " ~~> (" << l << ") = (" << l << ") * " << 1/t.get(l, j) << std::endl;
+    }
+
+    // perform elementary row operations
+    t.multiplyRowBy(l, 1/t.get(l, j));
+
+    for (unsigned x = 0; x < t.M; ++x) {
+        if (x == l)
+            continue;
+        if (verbose) {
+            std::cerr << " ~~> (" << x << ") = (" << x << ") + (" << l << ") * "
+                      << -t.get(x, j) << std::endl;
+        }
+        t.addDTimesRowBToRowA(x, l, -t.get(x, j));
+    }
+}
+
 Result PerformPivot(Matrix& t)
 {
     // TODO check soundness?
@@ -58,24 +85,9 @@ Result PerformPivot(Matrix& t)
 
     if (verbose) {
         std::cerr << " > Choose l = " << l << std::endl;
-        std::cerr << " ~~> (" << l << ") = (" << l << ") * " << 1/t.get(l, j) << std::endl;
     }
 
-    // update the mapping from columns to variables
-    t.setMapping(l, j);
-
-    // perform elementary row operations
-    t.multiplyRowBy(l, 1/t.get(l, j));
-
-    for (unsigned x = 0; x < t.M; ++x) {
-        if (x == l)
-            continue;
-        if (verbose) {
-            std::cerr << " ~~> (" << x << ") = (" << x << ") + (" << l << ") * "
-                      << -t.get(x, j) << std::endl;
-        }
-        t.addDTimesRowBToRowA(x, l, -t.get(x, j));
-    }
+    Eliminate(t, l, j);
 
     if (verbose)
         std::cerr << " > non-optimal" << std::endl;
@@ -142,20 +154,53 @@ bool Phase1(Matrix& t)
         std::cerr << "Solve artificial LP: {{{" << std::endl;
         std::cerr << a << std::endl;
     }
+
+    // solve artificial LP
     double res = Phase2(a);
+    if (! EQ(res, 0))
+        return false;
+
+    for (unsigned x = 1; x < a.M; ++x) {
+        if (a.getMapping(x) < t.N)
+            continue;
+        // artificial basic variable, has to be eliminated
+        if (verbose) {
+            std::cerr << " Eliminate artificial variable x"
+                      << a.getMapping(x) << "...";
+        }
+
+        bool success = false;
+
+        // search for non-artificial variable to enter basis instead
+        for (unsigned y = 1; y < t.N; ++y) {
+            if (EQ(a.get(x, y), 0))
+                continue;
+
+            if (verbose) {
+                std::cerr << " and insert x" << y << " instead" << std::endl;
+            }
+            Eliminate(a, x, y);
+            success = true;
+            break;
+        }
+
+        if (! success) {
+            // we cannot eliminate the variable from the basis
+            std::cerr << " failed to eliminate!" << std::endl;
+            a.setMapping(x, 0);
+        }
+    }
 
     if (verbose) {
-        std::cerr << "Solution of artificial LP:" << std::endl;
+        std::cerr << std::endl << "Solution of artificial LP:" << std::endl;
         std::cerr << a << std::endl;
         a.printMapping(std::cerr);
         std::cerr << "}}}" << std::endl;
     }
 
-    // TODO choose lin. independent set of columns containing the basis from sol
-    // --> calc determinant
     // TODO set up t
     // --> invert matrix
 
-    return EQ(res, 0);
+    return true;
 }
 
