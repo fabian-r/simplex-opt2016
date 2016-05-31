@@ -26,8 +26,8 @@ private:
     std::vector<unsigned> Mapping_;
 
 public:
-    const double M; // number of rows
-    const double N; // number of columns
+    unsigned M; // number of rows
+    unsigned N; // number of columns
 
 public:
     Matrix(unsigned m, unsigned n) :
@@ -57,6 +57,19 @@ public:
         for (unsigned y = 0; y < N; ++y) {
             this->set(a, y, this->get(a, y) + this->get(b, y) * d);
         }
+    }
+
+    void removeRow(unsigned row)
+    {
+        for (unsigned v = row * N; v < N*(M-1); ++v) {
+            Contents_.at(v) = Contents_.at(v+N);
+        }
+        Contents_.resize(N*(M-1));
+        for (unsigned i = row; i < (M-1); ++i) {
+            Mapping_.at(i) = Mapping_.at(i+1);
+        }
+        Mapping_.resize(M-1);
+        M = M-1;
     }
 
     void Canonicalize(void)

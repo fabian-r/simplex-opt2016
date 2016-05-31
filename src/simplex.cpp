@@ -3,7 +3,7 @@
 #include <limits>
 #include "impl.h"
 
-#define NUM_TESTS 10
+#define NUM_TESTS 100
 
 int main(int argc, char *argv[])
 {

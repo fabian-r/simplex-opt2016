@@ -203,11 +203,13 @@ bool Phase1(Matrix& t)
         }
 
         if (! success) {
-            assert(false && "failed to eliminate!");
             // we cannot eliminate the variable from the basis
             // => the constraint is redundant
-            std::cerr << " failed to eliminate!" << std::endl;
-            a.setMapping(x, 0); // TODO remove row
+            if (verbose) {
+                std::cerr << " failed to eliminate!" << std::endl;
+            }
+            a.removeRow(x);
+            t.removeRow(x);
         }
     }
 
