@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iostream>
+#include <cstdlib>
 
 // because floats suck...
 #define EPSILON 0.000000001
@@ -103,6 +104,18 @@ public:
             for (unsigned y = 0; y < res.N; ++y) {
                 double val;
                 stream >> val;
+                res.set(x, y, val);
+            }
+        }
+        return res;
+    }
+
+    static Matrix fromRandom(unsigned m, unsigned n, unsigned range)
+    {
+        Matrix res(m, n);
+        for (unsigned x = 0; x < res.M; ++x) {
+            for (unsigned y = 0; y < res.N; ++y) {
+                double val = (std::rand() % (2*range+1)) - range;
                 res.set(x, y, val);
             }
         }
