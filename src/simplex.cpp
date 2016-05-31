@@ -24,7 +24,8 @@ int main(int argc, char *argv[])
     if (from_stdin) {
         Matrix m = Matrix::fromInput(std::cin);
         std::cout << m;
-        Phase2(m);
+        Phase1(m);
+        // Phase2(m);
         std::cout << m;
         std::cout << std::endl;
         m.printMapping(std::cout);

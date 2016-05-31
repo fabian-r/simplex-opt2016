@@ -23,9 +23,8 @@ public:
     const double N; // number of columns
 
 public:
-
     Matrix(unsigned m, unsigned n) :
-        Contents_(m*n, 0.0), Mapping_(m, 0), M(m), N(n)
+        Contents_(m*n, 0.0), Mapping_(m, 0.0), M(m), N(n)
     {
     }
 
@@ -98,7 +97,7 @@ public:
     void printMapping(std::ostream& stream) const
     {
         stream << "objective value: " << -this->get(0, 0) << std::endl;
-        for (unsigned x = 0; x < this->M; ++x) {
+        for (unsigned x = 1; x < this->M; ++x) {
             stream << "x" << this->getMapping(x) << " = " << this->get(x, 0)
                    << std::endl;
         }

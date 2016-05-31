@@ -5,6 +5,7 @@
 // because floats suck...
 #define EPSILON 0.000000001
 #define LESS(a,b) ((a)-(b) < -EPSILON)
+#define EQ(a,b) (((a)-(b))*((a)-(b)) < EPSILON)
 
 bool verbose = false;
 
@@ -108,24 +109,23 @@ bool Phase1(Matrix& t)
     // read cost vector
     std::vector<double> c(t.M-1);
     for (unsigned y = 1; y < t.M; ++y) {
-        c.at(y) = t.get(0, y);
+        c.at(y-1) = t.get(0, y);
     }
 
     // create tableau for artificial problem
     Matrix a(t.M, t.N + t.M-1);
-    t.set(0, 0, 0.0);
 
-    double sum = 0.0;
+    // cT - cBT AB^-1 A = [0...01...1] - [1...1] I A
+    // ...
 
     for (unsigned x = 1; x < t.M; ++x) {
         // factor for making every entry of b >= 0
         double sign_factor = (LESS(t.get(x, 0), 0.0)) ? -1.0 : 1.0;
 
-        sum -= t.get(x,0);
-
         // set first N entrys of the artificial tableau
         for (unsigned y = 0; y < t.N; ++y) {
             a.set(x, y, sign_factor * t.get(x, y));
+            a.set(0, y, a.get(0, y) - sign_factor * t.get(x, y));
         }
 
         // set entries corresponding to the artificial variables
@@ -138,14 +138,24 @@ bool Phase1(Matrix& t)
         }
     }
 
-    // set non-zero entries of the zeroth row
-    a.set(0, 0, sum);
-    for (unsigned y = t.N; y < a.N; ++y) {
-        a.set(0, y, 1);
+    if (verbose) {
+        std::cerr << "Solve artificial LP: {{{" << std::endl;
+        std::cerr << a << std::endl;
+    }
+    double res = Phase2(a);
+
+    if (verbose) {
+        std::cerr << "Solution of artificial LP:" << std::endl;
+        std::cerr << a << std::endl;
+        a.printMapping(std::cerr);
+        std::cerr << "}}}" << std::endl;
     }
 
-    std::cerr << a;
+    // TODO choose lin. independent set of columns containing the basis from sol
+    // --> calc determinant
+    // TODO set up t
+    // --> invert matrix
 
-    return false;
+    return EQ(res, 0);
 }
 
