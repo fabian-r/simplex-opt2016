@@ -87,6 +87,9 @@ bool Phase1(Matrix& t)
         double sign_factor = (LESS(t.get(x, 0), 0.0)) ? -1.0 : 1.0;
 
         // set non-artificial entrys of the artificial tableau
+        // this makes use of the fact that AB^-1 is the identity matrix
+        // and that cB consists of only 1 entries whereas all other entries of
+        // c are 0.
         for (size_t y = 0; y < t.N; ++y) {
             a.set(x, y, sign_factor * t.get(x, y));
             a.set(0, y, a.get(0, y) - sign_factor * t.get(x, y));
@@ -157,6 +160,8 @@ bool Phase1(Matrix& t)
 
     // calculate inverted basis matrix AB^-1 using Gauss-Jordan Algorithm
     size_t rows = a.M-1;
+    // note that inv is indexed starting from 0 (in contrast to the other
+    // matrices)
     Matrix inv(rows, 2*rows);
     for (size_t x = 0; x < rows; ++x) {
         size_t var = a.getMapping(x+1);
