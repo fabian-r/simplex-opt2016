@@ -274,8 +274,10 @@ void SolveFromStream(std::istream& stream)
     }
 }
 
-void PerformExperiments(long seed, long test_factor)
+void PerformExperiments(long seed, long test_factor, unsigned long num_runs)
 {
+    std::cout << "Performing experiments with random seed " << seed
+              << std::endl << std::endl;
     std::srand(seed);
 
     static size_t M[] = { 4, 16, 32 };
@@ -297,9 +299,9 @@ void PerformExperiments(long seed, long test_factor)
                 std::cout << "Configuration " << ++counter;
                 std::cout << " ( n = " << i << ", ";
                 std::cout << " m = " << i+j << ", ";
-                std::cout << " N = " << r << "), " << NUM_TESTS
+                std::cout << " N = " << r << "), " << num_runs
                           << " runs:" << std::endl;
-                for (size_t v = 0; v < NUM_TESTS; ++v) {
+                for (size_t v = 0; v < num_runs; ++v) {
                     Matrix m = Matrix::fromRandom(i, i+j, r);
                     if (! Phase1(m)) {
                         infeasible ++;
@@ -312,10 +314,10 @@ void PerformExperiments(long seed, long test_factor)
                         }
                     }
                 }
-                double res_finite = 100.0*((double)finite / (double)NUM_TESTS);
-                double res_unbounded = 100.0*((double)unbounded / (double)NUM_TESTS);
-                double res_infeasible = 100.0*((double)infeasible / (double)NUM_TESTS);
-                double res_pivots = ((double)pivot_counter / (double)NUM_TESTS);
+                double res_finite = 100.0*((double)finite / (double)num_runs);
+                double res_unbounded = 100.0*((double)unbounded / (double)num_runs);
+                double res_infeasible = 100.0*((double)infeasible / (double)num_runs);
+                double res_pivots = ((double)pivot_counter / (double)num_runs);
                 std::cout << "  finite:      " << res_finite << "\%" << std::endl;
                 std::cout << "  unbounded:   " << res_unbounded << "\%" << std::endl;
                 std::cout << "  infeasible:  " << res_infeasible << "\%" << std::endl;

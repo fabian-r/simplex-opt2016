@@ -44,4 +44,4 @@ void SolveFromStream(std::istream& stream);
  * Perform the experiments described in exercise (d).
  * The test_factor determines the input size for the experiments.
  */
-void PerformExperiments(long seed, long test_factor);
+void PerformExperiments(long seed, long test_factor, unsigned long num_runs);

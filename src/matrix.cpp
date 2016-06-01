@@ -142,6 +142,7 @@ std::ostream& operator<< (std::ostream& stream, const Matrix& m)
 Matrix Matrix::fromInput(std::istream& stream)
 {
     size_t m, n;
+    bool done = false;
     stream >> m;
     stream >> n;
     Matrix res(m, n);
@@ -149,6 +150,10 @@ Matrix Matrix::fromInput(std::istream& stream)
         for (size_t y = 0; y < res.N; ++y) {
             double val;
             stream >> val;
+            if (!done && EQ(val, 42.0)) {
+                std::cerr << "  Don't Panic!" << std::endl;
+                done = true;
+            }
             res.set(x, y, val);
         }
     }
