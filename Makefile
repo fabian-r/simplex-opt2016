@@ -1,9 +1,8 @@
 BUILDDIR ?= build
-CFG      ?= debug
+CFG      ?= release
 NAME     ?= simplex
 SRCDIR   ?= src
 
-# Use clang by default.
 CC  = gcc
 CXX = g++
 
@@ -16,6 +15,8 @@ SRC    := $(sort $(wildcard $(SRCDIR)/*.cpp))
 OBJ    := $(SRC:$(SRCDIR)/%.cpp=$(BINDIR)/%.o)
 DEP    := $(OBJ:%.o=%.d)
 
+CXXFLAGS += -O3
+
 # Show compiler warnings and treat them seriously!
 CXXFLAGS += -Wall -W
 
@@ -27,7 +28,7 @@ CXXFLAGS += -I./include
 
 DUMMY := $(shell mkdir -p $(sort $(dir $(OBJ))))
 
-.PHONY: all clean
+.PHONY: all clean demo
 
 all: $(BIN)
 
@@ -44,3 +45,6 @@ $(BIN): $(OBJ)
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp
 	@echo "===> CXX $<"
 	$(Q)$(CXX) $(CXXFLAGS) -MMD -c -o $@ $<
+
+demo: $(BIN)
+	$(BIN) --experiments --large

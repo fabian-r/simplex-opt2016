@@ -1,150 +1,16 @@
 #pragma once
 
-#include <vector>
-#include <iostream>
-#include <cstdlib>
+#include "matrix.h"
 
-// because floats suck...
-#define EPSILON 0.000000001
-#define LESS(a,b) ((a)-(b) < -EPSILON)
-#define EQ(a,b) (((a)-(b))*((a)-(b)) < EPSILON*EPSILON)
-
-
-extern bool verbose;
-
+/**
+ * Result of a single pivot step.
+ */
 enum Result
 {
     UNBOUNDED,
     OPTIMAL,
     NONOPTIMAL
 };
-
-struct Matrix
-{
-private:
-    std::vector<double> Contents_;
-    std::vector<unsigned> Mapping_;
-
-public:
-    unsigned M; // number of rows
-    unsigned N; // number of columns
-
-public:
-    Matrix(unsigned m, unsigned n) :
-        Contents_(m*n, 0.0), Mapping_(m, 0.0), M(m), N(n)
-    {
-    }
-
-    double get(unsigned i, unsigned j) const
-    {
-        return Contents_.at(i*N + j);
-    }
-
-    void set(unsigned i, unsigned j, double x)
-    {
-        Contents_.at(i*N + j) = x;
-    }
-
-    void multiplyRowBy(unsigned a, double d)
-    {
-        for (unsigned y = 0; y < N; ++y) {
-            this->set(a, y, this->get(a, y) * d);
-        }
-    }
-
-    void addDTimesRowBToRowA(unsigned a, unsigned b, double d)
-    {
-        for (unsigned y = 0; y < N; ++y) {
-            this->set(a, y, this->get(a, y) + this->get(b, y) * d);
-        }
-    }
-
-    void removeRow(unsigned row)
-    {
-        for (unsigned v = row * N; v < N*(M-1); ++v) {
-            Contents_.at(v) = Contents_.at(v+N);
-        }
-        Contents_.resize(N*(M-1));
-        for (unsigned i = row; i < (M-1); ++i) {
-            Mapping_.at(i) = Mapping_.at(i+1);
-        }
-        Mapping_.resize(M-1);
-        M = M-1;
-    }
-
-    void Canonicalize(void)
-    {
-        for (unsigned i = 0; i < M*N; ++i) {
-            if (EQ(0, Contents_.at(i))) {
-                Contents_.at(i) = 0.0;
-            }
-        }
-    }
-
-    void setMapping(unsigned row, unsigned var)
-    {
-        Mapping_.at(row) = var;
-    }
-
-    unsigned getMapping(unsigned row) const
-    {
-        return Mapping_.at(row);
-    }
-
-    friend std::ostream& operator<< (std::ostream& stream, const Matrix& m)
-    {
-        stream << m.M << " " << m.N << std::endl;
-        for (unsigned x = 0; x < m.M; ++x) {
-            for (unsigned y = 0; y < m.N; ++y) {
-                stream << m.get(x, y);
-                if (y != m.N - 1)
-                    stream << ' ';
-            }
-            if (x != m.M - 1)
-                stream << '\n';
-        }
-        stream << std::endl;
-        return stream;
-    }
-
-    static Matrix fromInput(std::istream& stream)
-    {
-        unsigned m, n;
-        stream >> m;
-        stream >> n;
-        Matrix res(m, n);
-        for (unsigned x = 0; x < res.M; ++x) {
-            for (unsigned y = 0; y < res.N; ++y) {
-                double val;
-                stream >> val;
-                res.set(x, y, val);
-            }
-        }
-        return res;
-    }
-
-    static Matrix fromRandom(unsigned m, unsigned n, unsigned range)
-    {
-        Matrix res(m, n);
-        for (unsigned x = 0; x < res.M; ++x) {
-            for (unsigned y = 0; y < res.N; ++y) {
-                double val = (std::rand() % (2*range+1)) - range;
-                res.set(x, y, val);
-            }
-        }
-        return res;
-    }
-
-    void printMapping(std::ostream& stream) const
-    {
-        stream << "objective value: " << -this->get(0, 0) << std::endl;
-        for (unsigned x = 1; x < this->M; ++x) {
-            stream << "x" << this->getMapping(x) << " = " << this->get(x, 0)
-                   << std::endl;
-        }
-    }
-};
-
 
 /**
  * Perform one iteration of the simplex method.
@@ -162,4 +28,20 @@ Result PerformPivot(Matrix& t);
  */
 bool Phase1(Matrix& t);
 
+/**
+ * Perform phase 2 of the full tableau simplex method.
+ *
+ * Returns the achieved optimal objective value (can be -infinity).
+ */
 double Phase2(Matrix& t);
+
+/**
+ * Read a tableau from stream and solve it.
+ */
+void SolveFromStream(std::istream& stream);
+
+/**
+ * Perform the experiments described in exercise (d).
+ * The test_factor determines the input size for the experiments.
+ */
+void PerformExperiments(long seed, long test_factor);
