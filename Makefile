@@ -17,12 +17,11 @@ DEP    := $(OBJ:%.o=%.d)
 
 CXXFLAGS += -O3
 
-# Show compiler warnings and treat them seriously!
+# Show compiler warnings
 CXXFLAGS += -Wall -W
 
 # Standard compile time flags for C++/CXX projects.
 CXXFLAGS += -std=c++11
-CXXFLAGS += -I./include
 
 -include config/$(CFG).cfg
 
